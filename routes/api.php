@@ -26,6 +26,7 @@ Route::prefix('master')->group(function () {
     Route::get('/sumber-anggaran', [MasterDataController::class, 'getListSumberAnggaran']);
     Route::get('/penyilia', [MasterDataController::class, 'getListPenyilia']);
     Route::get('/asesor', [AsesorController::class, 'getAllAsesor']);
+    Route::get('/statistik-landing', [MasterDataController::class, 'getStatistikLanding']);
 });
 
 

@@ -612,4 +612,62 @@ class MasterDataController extends Controller
             ], 500);
         }
     }
+
+        public function getStatistikLanding()
+    {
+        try {
+            // 1. Ambil 3 Skema Paling Banyak Diuji
+            $topSkema = \Illuminate\Support\Facades\DB::table('pengajuan_ujk_details')
+                ->join('pengajuan_ujk', 'pengajuan_ujk_details.pengajuan_ujk_id', '=', 'pengajuan_ujk.id')
+                ->join('data_skema_sertifikasi_lsp_blk_sby', 'pengajuan_ujk_details.skema_id', '=', 'data_skema_sertifikasi_lsp_blk_sby.id')
+                ->whereIn('pengajuan_ujk.status', ['Menunggu', 'Disetujui'])
+                ->select(
+                    'data_skema_sertifikasi_lsp_blk_sby.namaSkema as nama',
+                    \Illuminate\Support\Facades\DB::raw('SUM(pengajuan_ujk_details.jumlah_peserta) as asesi')
+                )
+                ->groupBy('data_skema_sertifikasi_lsp_blk_sby.id', 'data_skema_sertifikasi_lsp_blk_sby.namaSkema')
+                ->orderByDesc('asesi')
+                ->limit(3)
+                ->get();
+
+            // 2. Ambil Grafik Bulanan Asesi Sepanjang Tahun Ini
+            $monthlyData = \Illuminate\Support\Facades\DB::table('pengajuan_ujk_details')
+                ->join('pengajuan_ujk', 'pengajuan_ujk_details.pengajuan_ujk_id', '=', 'pengajuan_ujk.id')
+                ->whereIn('pengajuan_ujk.status', ['Menunggu', 'Disetujui'])
+                ->whereYear('pengajuan_ujk_details.tanggal_mulai', date('Y'))
+                ->select(
+                    \Illuminate\Support\Facades\DB::raw('MONTH(pengajuan_ujk_details.tanggal_mulai) as month'),
+                    \Illuminate\Support\Facades\DB::raw('SUM(pengajuan_ujk_details.jumlah_peserta) as total')
+                )
+                ->groupBy(\Illuminate\Support\Facades\DB::raw('MONTH(pengajuan_ujk_details.tanggal_mulai)'))
+                ->get();
+
+            // Format data grafik bulanan menjadi lengkap 12 bulan (Jan - Des)
+            $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+            $chartData = [];
+            for ($i = 1; $i <= 12; $i++) {
+                $found = $monthlyData->firstWhere('month', $i);
+                $chartData[] = [
+                    'bulan' => $months[$i - 1],
+                    'total' => $found ? (int)$found->total : 0
+                ];
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'top_skema' => $topSkema,
+                    'grafik_bulanan' => $chartData
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengambil data statistik landing.',
+                'error_detail' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
