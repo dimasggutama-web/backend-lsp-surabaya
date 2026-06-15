@@ -208,14 +208,14 @@ class SuperAdminController extends Controller
         }
     }
     public function getListInstansi()
-{
-    // Sesuaikan sama nama model tabel instansi lu ya
-    $instansi = JejaringLspBlk::select('id', 'namaInstitusi')->where('status', 'Aktif')->get();
-    
-    return response()->json([
-        'status' => 'success',
-        'data' => $instansi
-    ]);
-}
+    {
+        // Sesuaikan sama nama model tabel instansi lu ya
+        $instansi = JejaringLspBlk::select('id', 'namaInstitusi')->where('status', 'Aktif')->get();
+        
+        return response()->json([
+            'status' => 'success',
+            'data' => $instansi
+        ]);
+    }
 }
     

@@ -77,7 +77,7 @@ class AsesorController extends Controller
     public function getAllAsesor (Request $request)
     {
         try {
-            $query = Asesor::with(['skema', 'user']);
+            $query = Asesor::with(['skema', 'user'])->withCount('penugasanAsesor');
             $filterStatus = $request->query('status');
 
             if ($filterStatus === 'semua') {
@@ -298,9 +298,8 @@ class AsesorController extends Controller
     {
         $rekapAsesor = User::where('role', 'asesor')
             ->where('status', 'aktif') 
-            // withCount buat ngitung berapa kali user ini ada di tabel penugasan_asesors
             ->withCount('penugasanAsesor') 
-            ->orderBy('penugasan_asesor_count', 'asc') // Urutin dari yang paling nganggur
+            ->orderBy('penugasan_asesor_count', 'asc') 
             ->get();
 
         return response()->json([
