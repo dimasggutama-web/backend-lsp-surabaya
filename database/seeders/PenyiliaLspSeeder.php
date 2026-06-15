@@ -14,6 +14,7 @@ class PenyiliaLspSeeder extends Seeder
      */
     public function run(): void
     {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('penyilia_lsp')->truncate();
         $now = Carbon::now();
         $data = [
@@ -30,5 +31,6 @@ class PenyiliaLspSeeder extends Seeder
             ['namaPenyilia' => 'Rizqi Octavian Nur Firmansyaho', 'jabatan' => 'Staf Administrasi ', 'noRegistrasi' => 'REG.LSP-254-0001-2025', 'institusi' => 'UPT BLK Surabaya', 'alamat' => 'Jl. Dukuh Menanggal III/29', 'kota' => 'Surabaya', 'created_at' => $now, 'updated_at' => $now],
         ];
         DB::table('penyilia_lsp')->insertOrIgnore($data);
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
 }
