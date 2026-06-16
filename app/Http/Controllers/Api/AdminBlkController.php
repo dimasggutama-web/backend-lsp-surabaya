@@ -13,6 +13,7 @@ use App\Models\PesertaPengajuanUjk;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 
 class AdminBlkController extends Controller
@@ -480,15 +481,15 @@ class AdminBlkController extends Controller
                 'message' => 'File surat pengajuan tidak ditemukan'
             ], 404);
         }
-        $pathFisik = storage_path('app/public/' . $pengajuan->file_surat_pengajuan);
+        $filePath = ltrim($pengajuan->file_surat_pengajuan, '/');
 
-        if (!file_exists($pathFisik)) {
+       if (!Storage::disk('public')->exists($filePath)) {
             return response()->json([
                 'status' => 'error', 
-                'message' => 'File surat pengajuan tidak ditemukan di server'
+                'message' => 'File fisik surat pengajuan tidak ditemukan di server'
             ], 404);
         }
-        return response()->file($pathFisik);
+        return response()->file(Storage::disk('public')->path($filePath));
     }
     public function suratKurikulum(Request $request, $detail_id)
     {

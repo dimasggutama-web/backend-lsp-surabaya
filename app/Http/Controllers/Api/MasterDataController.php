@@ -613,7 +613,7 @@ class MasterDataController extends Controller
         }
     }
 
-        public function getStatistikLanding()
+    public function getStatistikLanding()
     {
         try {
             // 1. Ambil 3 Skema Paling Banyak Diuji
@@ -629,7 +629,6 @@ class MasterDataController extends Controller
                 ->orderByDesc('asesi')
                 ->limit(3)
                 ->get();
-
             // 2. Ambil Grafik Bulanan Asesi Sepanjang Tahun Ini
             $monthlyData = \Illuminate\Support\Facades\DB::table('pengajuan_ujk_details')
                 ->join('pengajuan_ujk', 'pengajuan_ujk_details.pengajuan_ujk_id', '=', 'pengajuan_ujk.id')
@@ -641,7 +640,6 @@ class MasterDataController extends Controller
                 )
                 ->groupBy(\Illuminate\Support\Facades\DB::raw('MONTH(pengajuan_ujk_details.tanggal_mulai)'))
                 ->get();
-
             // Format data grafik bulanan menjadi lengkap 12 bulan (Jan - Des)
             $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
             $chartData = [];
@@ -652,7 +650,6 @@ class MasterDataController extends Controller
                     'total' => $found ? (int)$found->total : 0
                 ];
             }
-
             return response()->json([
                 'status' => 'success',
                 'data' => [
@@ -660,7 +657,6 @@ class MasterDataController extends Controller
                     'grafik_bulanan' => $chartData
                 ]
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -669,5 +665,4 @@ class MasterDataController extends Controller
             ], 500);
         }
     }
-
 }
