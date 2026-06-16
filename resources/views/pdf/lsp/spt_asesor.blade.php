@@ -87,7 +87,7 @@
                 <td style="font-family: 'Arial MT', Arial; font-size: 8.5px;">
                     <span>{{ $tugas->asesor->user->namaLengkap ?? $tugas->asesor->namaLengkap ?? '-' }}</span><br>
                     No. Reg. {{ $tugas->asesor->noRegistrasi ?? '-' }}<br>
-                    Asal Daerah : {{ $tugas->asesor->asalDaerah ?? '-' }}<br>
+                    Asal Daerah : {{ $tugas->asesor->user->asalDaerah ?? '-' }}<br>
                     Sebagai Asesor Kompetensi
                 </td>
                 
