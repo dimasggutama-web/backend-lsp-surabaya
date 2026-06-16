@@ -274,7 +274,7 @@ class AdminLspController extends Controller
             'plotting.*.peserta_id' => 'required|exists:peserta_pengajuan_ujk,id',
             'plotting.*.asesor_id' => [
                 'required',
-                Rule::in($validAsesorIds) // 🔒 KUNCI: Asesor harus ada di list $validAsesorIds
+                Rule::in($validAsesorIds)
             ],
         ], [
             'plotting.*.asesor_id.in' => 'Aksi ditolak! Terdapat asesor yang dipilih namun belum diploting pada jadwal ini.'
