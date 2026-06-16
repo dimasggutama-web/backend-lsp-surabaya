@@ -23,6 +23,7 @@ use HasApiTokens, HasFactory, Notifiable;
         'fotoProfil',
         'namaLengkap',
         'nomorTelpon',
+        'asalDaerah',
         'alamatDomisili',   
     ];
     protected $hidden = [

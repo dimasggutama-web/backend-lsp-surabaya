@@ -101,6 +101,7 @@ class UserController extends Controller
             'nomorTelpon' => 'nullable|string',
             'tanggalLahir' => 'nullable|date',
             'alamatDomisili' => 'nullable|string',
+            'asalDaerah' => 'nullable|string',
             'jenisKelamin' => 'nullable|in:L,P',
         ]);
 
