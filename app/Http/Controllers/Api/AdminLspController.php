@@ -98,11 +98,11 @@ class AdminLspController extends Controller
 
         $statusInduk = $pengajuanDetail->pengajuan->status;
 
-        if ($statusInduk !== 'Menunggu') {
+        if (!in_array($statusInduk, ['Menunggu', 'Disetujui'])) {
             return response()->json([
                 'status' => 'error',
-                'message' => "Gagal ploting! Ploting jadwal hanya bisa dilakukan untuk pengajuan yang berstatus 'Menunggu'. Status pengajuan saat ini adalah '{$statusInduk}'."
-            ], 403); 
+                'message' => "Gagal ploting! Ploting jadwal hanya bisa dilakukan untuk pengajuan yang berstatus 'Menunggu' atau 'Disetujui'. Status pengajuan saat ini adalah '{$statusInduk}'."
+            ], 403);
         }
 
         $penyilia = \App\Models\Penyilia::find($request->penyilia_id);
