@@ -121,7 +121,7 @@ class MasterDataController extends Controller
     public function addSkema(Request $request)
     {
         $rules = [
-            'kodeSkema' => 'required|string|unique:data_skema_sertifikasi_lsp_blk_sby,kodeSkema',
+            'kodeSkema' => 'required|string',
             'namaSkema' => 'required|string',
             'profesi'   => 'required|string',
             'bidang_id' => 'required|exists:bidang,id',
@@ -133,8 +133,8 @@ class MasterDataController extends Controller
     public function editSkema(Request $request, $id)
     {
         $rules = [
-            'kodeSkema' => 'required|string|unique:data_skema_sertifikasi_lsp_blk_sby,kodeSkema,' . $id,
-            'namaSkema' => 'required|string',
+            'kodeSkema' => 'required|string',
+            'namaSkema' => 'required|string',   
             'profesi'   => 'required|string',
             'bidang_id' => 'required|exists:bidang,id',
             'jenisSkema' => 'required|string'
