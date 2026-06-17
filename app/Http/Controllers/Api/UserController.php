@@ -14,6 +14,7 @@ class UserController extends Controller
     {
         try {
             $user = $request->user();
+            $user->load('instansi');
 
             if (!$user) {
                 return response()->json([
