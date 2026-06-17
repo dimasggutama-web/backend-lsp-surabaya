@@ -41,6 +41,7 @@ Route::get('/cek-waktu', function () {
         '3_waktu_database' => \Illuminate\Support\Facades\DB::select("SELECT NOW() as db_time")[0]->db_time
     ]);
 });
+Route::get('/asesor/sertifikat/{path}', [AsesorController::class, 'sertifikatAsesor'])->where('path', '.*');
 
 Route::middleware('auth:sanctum')->group(function () {
     //Fitur semua user
@@ -223,7 +224,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/asesor/edit-data', [AsesorController::class, 'dataAsesor']);  
         Route::get('/asesor/dokumen/{detail_id}', [AsesorController::class, 'getDokumenAsesor']);
         Route::get('/asesor/download-file/{id}', [AsesorController::class, 'downloadDokumenFisik']);
-        Route::get('/asesor/sertifikat/{path}', [AsesorController::class, 'sertifikatAsesor'])->where('path', '.*');
     });
     
 });

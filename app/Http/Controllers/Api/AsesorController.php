@@ -9,7 +9,8 @@ use App\Models\PenugasanAsesor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator; 
-use Illuminate\Support\Facades\Log;       
+use Illuminate\Support\Facades\Log;     
+use Illuminate\Support\Facades\Storage;  
 use Carbon\Carbon;
 
 class AsesorController extends Controller
@@ -350,10 +351,14 @@ class AsesorController extends Controller
     }
     public function sertifikatAsesor($path)
     {
-        $fullPath = storage_path('app/public/' . $path);
-        if (file_exists($fullPath)) {
-            return response()->file($fullPath);
+        $cleanPath = ltrim($path, '/');
+        if (!Storage::disk('public')->exists($cleanPath)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Sertifikat tidak ditemukan di server.'
+            ], 404);
         }
-        return response()->json(['message' => 'Sertifikat tidak ditemukan di server.'], 404);
+
+        return response()->file(Storage::disk('public')->path($cleanPath));
     }
 }
