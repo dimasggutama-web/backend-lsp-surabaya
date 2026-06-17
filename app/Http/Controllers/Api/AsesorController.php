@@ -348,4 +348,12 @@ class AsesorController extends Controller
 
         return response()->file(storage_path('app/public/' . $dokumen->path_file));
     }
+    public function sertifikatAsesor($path)
+    {
+        $fullPath = storage_path('app/public/' . $path);
+        if (file_exists($fullPath)) {
+            return response()->file($fullPath);
+        }
+        return response()->json(['message' => 'Sertifikat tidak ditemukan di server.'], 404);
+    }
 }
