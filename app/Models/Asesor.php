@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Asesor extends Model
 {
@@ -32,5 +33,13 @@ class Asesor extends Model
     public function penugasanAsesor()
     {
         return $this->hasMany(PenugasanAsesor::class, 'asesor_id');
+    }
+    protected static function booted()
+    {
+        static::addGlobalScope('hanya_asesor_aktif', function (Builder $builder) {
+            $builder->whereHas('user', function ($query) {
+                $query->where('role', 'asesor'); 
+            });
+        });
     }
 }
