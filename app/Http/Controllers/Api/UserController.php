@@ -102,8 +102,13 @@ class UserController extends Controller
             'nomorTelpon' => 'nullable|string',
             'tanggalLahir' => 'nullable|date',
             'alamatDomisili' => 'nullable|string',
-            'asalDaerah' => 'nullable|string',
+            'asalDaerah' => [
+                $request->user()->role === 'asesor' ? 'required' : 'nullable', 
+                'string'
+            ],
             'jenisKelamin' => 'nullable|in:L,P',
+        ], [
+            'asalDaerah.required' => 'Asal daerah wajib diisi.',
         ]);
 
         $request->user()->update(array_filter($validatedData));
