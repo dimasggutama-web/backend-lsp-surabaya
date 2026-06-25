@@ -218,4 +218,3 @@ class SuperAdminController extends Controller
         ]);
     }
 }
-    

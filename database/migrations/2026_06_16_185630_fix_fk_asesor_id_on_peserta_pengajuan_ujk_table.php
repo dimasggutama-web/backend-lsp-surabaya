@@ -12,11 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('peserta_pengajuan_ujk', function (Blueprint $table) {
-            // 1. Putus (Drop) relasi lama yang salah arah
-            // Laravel otomatis nyari nama index: namaTabel_namaKolom_foreign
-            $table->dropForeign(['asesor_id']);
-
-            // 2. Pasang (Add) relasi baru yang bener ke tabel asesor
             $table->foreign('asesor_id')
                   ->references('id')
                   ->on('asesor')

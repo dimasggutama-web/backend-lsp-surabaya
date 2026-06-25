@@ -10,6 +10,7 @@ use App\Models\PengajuanUjkDetail;
 use App\Models\DokumenUploadLsp;
 use App\Models\JejaringLspBlk;
 use App\Models\PesertaPengajuanUjk;
+use App\Models\TemplateFile;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Validation\Rule;
@@ -245,7 +246,18 @@ class AdminBlkController extends Controller
                     ->where('skema_id', $skema['skema_id'])
                     ->first();
 
-                
+                if (!$detailLama) { 
+                    if (!$request->hasFile("skemas.{$index}.file_nominatif") || !$request->hasFile("skemas.{$index}.file_kurikulum")) {
+                        DB::rollBack(); 
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Validasi Gagal! Anda menambahkan Skema Baru, maka File Nominatif dan File Kurikulum wajib diunggah.',
+                            'errors' => [
+                                "skemas.{$index}.file" => ['File wajib diunggah untuk skema baru.']
+                            ]
+                        ], 422);
+                    }
+                }
 
                 $nominatifPath = $detailLama ? $detailLama->file_nominatif : null;
                 $kurikulumPath = $detailLama ? $detailLama->file_kurikulum : null;
@@ -419,7 +431,12 @@ class AdminBlkController extends Controller
         }
     }
     public function getDashboard(){
-        $pengajuanFix = PengajuanUjk::with(['detailSkema.tuk', 'detailSkema.skema', 'detailSkema.pesertaPengajuanUjk'])
+        $pengajuanFix = PengajuanUjk::with([
+                'detailSkema.tuk',
+                'detailSkema.skema',
+                'detailSkema.pesertaPengajuanUjk',
+                'detailSkema.jadwalAsesmen.penugasanAsesor'
+            ])
             ->where('admin_blk_id', auth()->id())
             ->where('status', '!=', 'Draft')
             ->get();
@@ -472,6 +489,33 @@ class AdminBlkController extends Controller
             'data' => $dataResponse
         ], 200);
     }
+
+    /**
+     * Download template Excel untuk data nominatif asesi.
+     */
+    public function downloadTemplateNominatif()
+    {
+        $template = TemplateFile::findByNama('template_nominatif');
+
+        if (!$template) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Template belum tersedia. Hubungi administrator.'
+            ], 404);
+        }
+
+        $fileContent = base64_decode($template->data);
+
+        return response($fileContent, 200, [
+            'Content-Type'        => $template->mime_type,
+            'Content-Disposition' => 'attachment; filename="' . $template->nama_file . '"',
+            'Content-Length'      => strlen($fileContent),
+            'Cache-Control'       => 'no-cache, no-store, must-revalidate',
+            'Pragma'              => 'no-cache',
+            'Expires'             => '0',
+        ]);
+    }
+
     public function suratPengajuan(Request $request, $detail_id)
     {
         $pengajuan = PengajuanUjk::find($detail_id);
@@ -519,5 +563,26 @@ class AdminBlkController extends Controller
         }
 
         return response()->file(storage_path('app/public/' . $dokumen->path_file));
+    }
+
+    public function updateTtSertifikat(Request $request, $detail_id)
+    {
+        $request->validate([
+            'status' => 'required|in:Selesai,Belum Selesai'
+        ]);
+
+        $detail = PengajuanUjkDetail::find($detail_id);
+
+        if (!$detail) {
+            return response()->json(['status' => 'error', 'message' => 'Data tidak ditemukan'], 404);
+        }
+
+        $detail->status_tt_sertifikat = $request->status;
+        $detail->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Status Tanda Terima Sertifikat berhasil diubah.'
+        ], 200);
     }
 }

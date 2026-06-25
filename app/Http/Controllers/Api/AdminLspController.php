@@ -355,4 +355,105 @@ class AdminLspController extends Controller
             'data' => ['no_resi' => $detail->no_resi]
         ], 200);
     }
+    public function deletePengajuan($id)
+    {
+        $pengajuan = PengajuanUjk::find($id);
+
+        if (!$pengajuan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Data Pengajuan tidak ditemukan'
+            ], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $details = PengajuanUjkDetail::where('pengajuan_ujk_id', $id)->get();
+            foreach($details as $detail) {
+                // Hapus Jadwal & Penugasan Asesor
+                $jadwals = JadwalAsesmen::where('pengajuan_ujk_detail_id', $detail->id)->get();
+                foreach($jadwals as $jadwal) {
+                    PenugasanAsesor::where('jadwal_asesmen_id', $jadwal->id)->delete();
+                    $jadwal->delete();
+                }
+
+                PesertaPengajuanUjk::where('pengajuan_ujk_detail_id', $detail->id)->delete();
+                \App\Models\DokumenUploadLsp::where('pengajuan_ujk_detail_id', $detail->id)->delete();
+                $detail->delete();
+            }
+            \App\Models\DokumenUploadLsp::where('pengajuan_ujk_id', $id)->delete();
+            $pengajuan->delete();
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data Pengajuan berhasil dihapus/dibatalkan beserta jadwal dan plottingnya.'
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menghapus pengajuan.',
+                'error_detail' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function updateStatusPemantauan(Request $request, $id)
+    {
+        $request->validate([
+            'jenis_status' => 'required|string',
+            'status' => 'required|string',
+            'no_resi' => 'nullable|string'
+        ]);
+        $detail = PengajuanUjkDetail::find($id);
+        if (!$detail) {
+            return response()->json(['status' => 'error', 'message' => 'Data tidak ditemukan'], 404);
+        }
+        $jenisStatus = $request->jenis_status;
+        $statusStr = $request->status;
+        // Update the specific status column (e.g. status_cetak, status_dikirim, etc.)
+        $columnMap = [
+            'cetak' => 'status_cetak',
+            'dikirim' => 'status_dikirim',
+            'diterima' => 'status_diterima',
+            'tt_sertifikat' => 'status_tt_sertifikat',
+            'pelaksanaanStatus' => 'status_pelaksanaan',
+            'pembayaran' => 'status_pembayaran',
+            'draft' => 'status_draft'
+        ];
+        if (array_key_exists($jenisStatus, $columnMap)) {
+            $colName = $columnMap[$jenisStatus];
+            $detail->{$colName} = $statusStr;
+        }
+        if ($jenisStatus === 'dikirim' && $request->has('no_resi')) {
+            $detail->no_resi = $request->no_resi;
+        } else if ($jenisStatus === 'noResi') {
+            $detail->no_resi = $request->no_resi;
+        }
+        // Logic for Admin BLK status_sertifikat_blk
+        if ($statusStr === 'Selesai') {
+            if ($jenisStatus === 'cetak') {
+                $detail->status_sertifikat_blk = 'dicetak';
+            } elseif ($jenisStatus === 'dikirim') {
+                $detail->status_sertifikat_blk = 'di kirim';
+            } elseif ($jenisStatus === 'diterima') {
+                $detail->status_sertifikat_blk = 'di terima';
+            }
+        } else {
+            // Jika dikembalikan ke Belum Selesai (Mundur status)
+            if ($jenisStatus === 'diterima') {
+                $detail->status_sertifikat_blk = $detail->status_dikirim === 'Selesai' ? 'di kirim' : ($detail->status_cetak === 'Selesai' ? 'dicetak' : 'belum dicetak');
+            } elseif ($jenisStatus === 'dikirim') {
+                $detail->status_sertifikat_blk = $detail->status_cetak === 'Selesai' ? 'dicetak' : 'belum dicetak';
+                $detail->no_resi = null; // hapus resi jika pengiriman batal
+            } elseif ($jenisStatus === 'cetak') {
+                $detail->status_sertifikat_blk = 'belum dicetak';
+            }
+        }
+        $detail->save();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Status pemantauan berhasil diubah.'
+        ]);
+    }
 }

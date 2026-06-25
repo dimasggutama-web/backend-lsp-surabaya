@@ -5,7 +5,7 @@
     <title>Laporan Penyelia</title>
     <style>
         /* Setting Kertas & Body Utama */
-        @page { size: A4 portrait; margin: 30px 40px; }
+        @page { size: A4 portrait; margin: 20px 40px; }
         body { font-family: 'Arial MT', Arial, sans-serif; font-size: 11px; line-height: 1.3; }
         
         /* Utility Classes */
@@ -18,8 +18,8 @@
         .kop-table td { border: 1px solid black; padding: 5px; }
 
         /* Styling Tabel Data & Bordered (Digabung rapi) */
-        .table-data { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
-        .table-data td, .table-data th { border: 1px solid black; padding: 5px; vertical-align: top; }
+        .table-data { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 10px; }
+        .table-data td, .table-data th { border: 1px solid black; padding: 2px 4px; vertical-align: top; }
         
         .table-bordered { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
         .table-bordered td, .table-bordered th { border: 1px solid black; padding: 4px; }
@@ -122,7 +122,7 @@
         Demikian Laporan ini di buat dengan keadaan sebenarnya dan dapat digunakan sebagai bahan pertimbangan dalam pengambilan keputusan oleh LSP BLK Surabaya.
     </p>
     
-    <h4 style="text-align: center; font-family: 'Arial', sans-serif; font-size: 10px; margin-bottom: 5px; margin-top: 20px;">Pelaksana Asesmen,</h4>
+    <h4 style="text-align: center; font-family: 'Arial', sans-serif; font-size: 10px; margin-bottom: 5px; margin-top: 10px;">Pelaksana Asesmen,</h4>
     
     <table width="100%" style="font-family: 'Arial MT', Arial; font-size: 10px; border-collapse: collapse;">
         <tr>
@@ -140,16 +140,24 @@
             <td height="85" valign="bottom">
                 <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
-                        <td width="50%" valign="bottom" align="left" style="font-size: 10px; padding-left: 5px;">
+                        @if(isset($detail->jadwalAsesmen->penugasanAsesor) && count($detail->jadwalAsesmen->penugasanAsesor) > 0)
+                            <td width="{{ count($detail->jadwalAsesmen->penugasanAsesor) > 1 ? '50%' : '100%' }}" valign="bottom" align="left" style="font-size: 10px; padding-left: 5px;">
                             1.<br><br><br>
                             <span style="border-bottom: 1px solid black;">{{ $detail->jadwalAsesmen->penugasanAsesor[0]->asesor->user->namaLengkap ?? $detail->jadwalAsesmen->penugasanAsesor[0]->asesor->namaLengkap ?? '-' }}</span><br>
                             MET. {{ $detail->jadwalAsesmen->penugasanAsesor[0]->asesor->noRegistrasi ?? '-' }}
                         </td>
+                        @if(count($detail->jadwalAsesmen->penugasanAsesor) > 1)
                         <td width="50%" valign="bottom" align="left" style="font-size: 10px;">
                             2.<br><br><br>
                             <span style="border-bottom: 1px solid black;">{{ $detail->jadwalAsesmen->penugasanAsesor[1]->asesor->user->namaLengkap ?? $detail->jadwalAsesmen->penugasanAsesor[1]->asesor->namaLengkap ?? '-' }}</span><br>
                             MET. {{ $detail->jadwalAsesmen->penugasanAsesor[1]->asesor->noRegistrasi ?? '-' }}
                         </td>
+                        @endif
+                        @else
+                            <td width="100%" valign="bottom" align="left" style="font-size: 10px; padding-left: 5px;">
+                                -
+                            </td>
+                        @endif
                     </tr>
                 </table>
             </td>

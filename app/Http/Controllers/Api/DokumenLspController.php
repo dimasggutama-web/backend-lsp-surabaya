@@ -690,6 +690,12 @@ class DokumenLspController extends Controller
         if (!$detail->jadwalAsesmen) {
             return response()->json(['message' => 'Jadwal Asesmen belum dibuat. Hasil Final Pleno tidak bisa dicetak.'], 403);
         }
+        
+        $pesertaLulus = $detail->pesertaPengajuanUjk->filter(function($peserta) {
+            return strtolower($peserta->keputusan_uji) === 'kompeten';
+        })->values();
+
+        $detail->setRelation('pesertaPengajuanUjk', $pesertaLulus);
 
         $data = [
             'detail' => $detail,
@@ -825,7 +831,7 @@ class DokumenLspController extends Controller
                 $listSuratKategori[] = [
                     'kode_surat'   => $kode,
                     'nama_surat'   => $namaFormat,
-                    'status_surat' => $sudahDicetak ? 'Sudah Dicetak' : 'Belum Dicetak', // 👈 STATUS PER SURAT
+                    'status_surat' => $sudahDicetak ? 'Sudah Dicetak' : 'Belum Dicetak',
                     'waktu_cetak'  => $sudahDicetak ? $dokumenDicetak[$kode]->waktu_cetak : null
                 ];
             }
@@ -833,10 +839,10 @@ class DokumenLspController extends Controller
             // Masukin data kategori dan gabungin sama list suratnya
             $responseResult[] = [
                 'kategori'      => $kategori,
-                'is_lengkap'    => $totalCetak === count($daftarSurat), // True kalau semua surat di kategori ini udah dicetak
+                'is_lengkap'    => $totalCetak === count($daftarSurat), 
                 'total_surat'   => count($daftarSurat),
                 'total_dicetak' => $totalCetak,
-                'list_surat'    => $listSuratKategori // 👈 Ini isinya surat-surat detilnya
+                'list_surat'    => $listSuratKategori 
             ];
         }
 

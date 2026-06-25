@@ -138,12 +138,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin-lsp/cetak-surat-sk-penetapan-hasil/{detail_id}', [DokumenLspController::class, 'cetakSkPenetapanHasil']);
         Route::get('/admin-lsp/cetak-surat-hasil-final-pleno/{detail_id}', [DokumenLspController::class, 'cetakHasilFinalPleno']);
 
-        Route::patch('/admin-lsp/pemantauan/{detail_id}/status', [AdminLspController::class, 'updateStatusTracking']);
         Route::post('/admin-lsp/pemantauan/{detail_id}/resi', [AdminLspController::class, 'inputResi']);
-
-        Route::get('/admin-lsp/peserta-kompeten', [SertifikatController::class, 'pesertaKompeten']);
         Route::get('/admin-lsp/list-sertifikat', [SertifikatController::class, 'listDataSertifikat']);
+        Route::get('/admin-lsp/peserta-kompeten', [SertifikatController::class, 'pesertaKompeten']);
         Route::post('/admin-lsp/tambah-data-sertifikat', [SertifikatController::class, 'tambahSertifikat']);
+        Route::put('/admin-lsp/sertifikat/{id}', [SertifikatController::class, 'updateSertifikat']);
+        Route::delete('/admin-lsp/sertifikat/{id}', [SertifikatController::class, 'deleteSertifikat']);
+        Route::post('/admin-lsp/import-sertifikat-excel', [SertifikatController::class, 'importSertifikatExcel']);
+        Route::get('/admin-lsp/download-template-sertifikat', [SertifikatController::class, 'downloadTemplateSertifikat']);
+        Route::post('/admin-lsp/upload-template-sertifikat', [SertifikatController::class, 'uploadTemplateSertifikat']);
+        Route::post('/admin-lsp/upload-template-nominatif', [SertifikatController::class, 'uploadTemplateNominatif']);
+
 
         Route::get('/admin-lsp/pengajuan/surat/{id}', [AdminBlkController::class, 'suratPengajuan']);
 
@@ -153,6 +158,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin-lsp/ploting-jadwal/{detail_id}', [AdminLspController::class, 'plotingJadwal']);
         Route::post('/admin-lsp/simpan-plotting-peserta/{detail_id}', [AdminLspController::class, 'simpanPlotingPeserta']);
         Route::put('/admin-lsp/{id}/batalkan-pengajuan', [AdminLspController::class, 'batalkanPengajuan']);
+        Route::delete('/admin-lsp/pengajuan/{id}', [AdminLspController::class, 'deletePengajuan']);
+        Route::patch('/admin-lsp/pemantauan/{id}/status', [AdminLspController::class, 'updateStatusPemantauan']);
     });
 
     //Fitur Staf LSP
@@ -193,7 +200,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/staf-lsp/cetak-surat-sk-penetapan-hasil/{detail_id}', [DokumenLspController::class, 'cetakSkPenetapanHasil']);
         Route::get('/staf-lsp/cetak-surat-hasil-final-pleno/{detail_id}', [DokumenLspController::class, 'cetakHasilFinalPleno']);
 
-        Route::patch('/staf-lsp/pemantauan/{detail_id}/status', [AdminLspController::class, 'updateStatusTracking']);
+        Route::patch('/staf-lsp/pemantauan/{id}/status', [AdminLspController::class, 'updateStatusPemantauan']);
         Route::post('/staf-lsp/pemantauan/{detail_id}/resi', [AdminLspController::class, 'inputResi']);
 
         Route::post('/staf-lsp/upload-dokumen/{detail_id}', [LspUploadController::class, 'uploadDokumenLsp']);
@@ -212,9 +219,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin-blk/history-pengajuan', [AdminBlkController::class, 'getDashboard']);
         
         Route::post('/admin-blk/pengajuan-ujk', [AdminBlkController::class, 'pengajuanUjk']);
+        Route::get('/admin-blk/download-template-nominatif', [AdminBlkController::class, 'downloadTemplateNominatif']);
         Route::post('/admin-blk/update-draft-pengajuan/{id}', [AdminBlkController::class, 'updateDraftPengajuan']);
         Route::put('/admin-blk/simpan-pengajuan-ujk/{id}', [AdminBlkController::class, 'submitPengajuan']);
         Route::delete('/admin-blk/cancel-pengajuan-ujk/{id}', [AdminBlkController::class, 'cancelPengajuan']);
+        Route::patch('/admin-blk/pemantauan/{detail_id}/tt-sertifikat', [AdminBlkController::class, 'updateTtSertifikat']);
     });
 
     //Fitur asesor
