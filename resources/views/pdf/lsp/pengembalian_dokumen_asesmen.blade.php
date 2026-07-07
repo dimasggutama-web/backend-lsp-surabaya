@@ -5,7 +5,7 @@
     <title>Pengembalian Dokumen Asesmen</title>
     <style>
         /* [PENTING]: Set kertas jadi Landscape biar muat ke samping */
-        @page { size: A4 landscape; margin: 30px 40px; }
+        @page { size: A4 landscape; margin: 70px 40px 40px 40px; }
         body { font-family: 'Arial MT', Arial, sans-serif; font-size: 10px; line-height: 1.3; }
         
         /* Utility Classes */

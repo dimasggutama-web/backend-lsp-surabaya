@@ -5,7 +5,7 @@
     <title>Laporan Penyelia</title>
     <style>
         /* Setting Kertas & Body Utama */
-        @page { size: A4 portrait; margin: 20px 40px; }
+        @page { size: A4 portrait; margin: 70px 40px 40px 40px; }
         body { font-family: 'Arial MT', Arial, sans-serif; font-size: 11px; line-height: 1.3; }
         
         /* Utility Classes */
@@ -69,17 +69,47 @@
     </table>
     
     @php
-        $hari = \Carbon\Carbon::parse($detail->tanggal_mulai)->locale('id')->isoFormat('dddd');
-        $tanggal = \Carbon\Carbon::parse($detail->tanggal_mulai)->format('d');
-        $bulan = \Carbon\Carbon::parse($detail->tanggal_mulai)->locale('id')->isoFormat('MMMM');
-        $tahun = \Carbon\Carbon::parse($detail->tanggal_mulai)->format('Y');
-        $tuk = $detail->tuk->namaInstitusi ?? '-';
-        $skema = $detail->skema->namaSkema ?? '-';
+        // Fungsi konversi angka ke huruf (terbilang Indonesia)
+        function terbilang($angka) {
+            $angka = abs(intval($angka));
+            $satuan = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan',
+                       'Sepuluh', 'Sebelas', 'Dua Belas', 'Tiga Belas', 'Empat Belas', 'Lima Belas',
+                       'Enam Belas', 'Tujuh Belas', 'Delapan Belas', 'Sembilan Belas'];
+            $puluhan = ['', '', 'Dua Puluh', 'Tiga Puluh', 'Empat Puluh', 'Lima Puluh',
+                        'Enam Puluh', 'Tujuh Puluh', 'Delapan Puluh', 'Sembilan Puluh'];
+
+            if ($angka === 0) return 'Nol';
+            if ($angka < 20) return $satuan[$angka];
+            if ($angka < 100) {
+                $sisa = $angka % 10;
+                return $puluhan[intval($angka / 10)] . ($sisa > 0 ? ' ' . $satuan[$sisa] : '');
+            }
+            if ($angka < 1000) {
+                $ratus = intval($angka / 100);
+                $sisa  = $angka % 100;
+                $hasil = ($ratus === 1 ? 'Seratus' : $satuan[$ratus] . ' Ratus');
+                return $hasil . ($sisa > 0 ? ' ' . terbilang($sisa) : '');
+            }
+            if ($angka < 1000000) {
+                $ribu = intval($angka / 1000);
+                $sisa = $angka % 1000;
+                $hasil = ($ribu === 1 ? 'Seribu' : terbilang($ribu) . ' Ribu');
+                return $hasil . ($sisa > 0 ? ' ' . terbilang($sisa) : '');
+            }
+            return (string) $angka;
+        }
+
+        $hari    = \Carbon\Carbon::parse($detail->tanggal_mulai)->locale('id')->isoFormat('dddd');
+        $tanggal = terbilang((int) \Carbon\Carbon::parse($detail->tanggal_mulai)->format('d'));
+        $bulan   = \Carbon\Carbon::parse($detail->tanggal_mulai)->locale('id')->isoFormat('MMMM');
+        $tahun   = terbilang((int) \Carbon\Carbon::parse($detail->tanggal_mulai)->format('Y'));
+        $tuk     = $detail->tuk->namaInstitusi ?? '-';
+        $skema   = $detail->skema->namaSkema ?? '-';
         $jmlPeserta = count($detail->pesertaPengajuanUjk ?? []);
     @endphp
 
     <p style="font-family: 'Arial MT', Arial; font-size: 10px; text-align: justify; margin-bottom: 5px;">
-        Pada hari ini <strong>{{ $hari }}</strong> tanggal <strong>{{ $tanggal }}</strong> bulan <strong>{{ $bulan }}</strong> tahun <strong>{{ $tahun }}</strong>, bertempat di TUK <strong>{{ $detail->bidang->namaBidang ?? 'Garmen' }} {{ $tuk }}</strong> telah dilakukan Uji Kompetensi Skema <strong>{{ $skema }}</strong> yang diikuti sebanyak <strong>{{ $jmlPeserta }}</strong> peserta dengan penjelasan sebagai berikut :
+        Pada hari ini {{ $hari }} tanggal {{ $tanggal }} bulan {{ $bulan }} tahun {{ $tahun }} pukul {{ $waktu ?? '17.00' }} WIB telah berlangsung asesmen / uji kompetensi bidang Profesi {{ $detail->bidang->namaBidang ?? 'Garmen' }}, untuk skema sertifikasi {{ $skema }} dengan jumlah asesi {{ $jmlPeserta }} orang di TUK {{ $tuk }} dengan rincian sebagai berikut :
     </p>
 
     <p style="color: red; font-style: italic; font-weight: bold; font-family: 'Arial MT', Arial; font-size: 10px; margin-bottom: 5px;">di isi oleh tim penyelia</p>
@@ -144,13 +174,13 @@
                             <td width="{{ count($detail->jadwalAsesmen->penugasanAsesor) > 1 ? '50%' : '100%' }}" valign="bottom" align="left" style="font-size: 10px; padding-left: 5px;">
                             1.<br><br><br>
                             <span style="border-bottom: 1px solid black;">{{ $detail->jadwalAsesmen->penugasanAsesor[0]->asesor->user->namaLengkap ?? $detail->jadwalAsesmen->penugasanAsesor[0]->asesor->namaLengkap ?? '-' }}</span><br>
-                            MET. {{ $detail->jadwalAsesmen->penugasanAsesor[0]->asesor->noRegistrasi ?? '-' }}
+                            {{ $detail->jadwalAsesmen->penugasanAsesor[0]->asesor->noRegistrasi ?? '-' }}
                         </td>
                         @if(count($detail->jadwalAsesmen->penugasanAsesor) > 1)
                         <td width="50%" valign="bottom" align="left" style="font-size: 10px;">
                             2.<br><br><br>
                             <span style="border-bottom: 1px solid black;">{{ $detail->jadwalAsesmen->penugasanAsesor[1]->asesor->user->namaLengkap ?? $detail->jadwalAsesmen->penugasanAsesor[1]->asesor->namaLengkap ?? '-' }}</span><br>
-                            MET. {{ $detail->jadwalAsesmen->penugasanAsesor[1]->asesor->noRegistrasi ?? '-' }}
+                            {{ $detail->jadwalAsesmen->penugasanAsesor[1]->asesor->noRegistrasi ?? '-' }}
                         </td>
                         @endif
                         @else
@@ -170,7 +200,7 @@
                     {{ $detail->jadwalAsesmen->penyilia->namaPenyilia ?? $detail->jadwalAsesmen->penyilia->nama ?? '-' }}
                 </span><br>
                 <span style="font-size: 9px; display: inline-block; margin-top: 2px;">
-                    REG. {{ $detail->jadwalAsesmen->penyilia->noRegistrasi ?? '-' }}
+                    {{ $detail->jadwalAsesmen->penyilia->noRegistrasi ?? '-' }}
                 </span>
             </td>
         </tr>

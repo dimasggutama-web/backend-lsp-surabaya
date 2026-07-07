@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tanda Terima Dokumen</title>
     <style>
-        @page { size: A4 portrait; margin: 30px 40px; }
+        @page { size: A4 portrait; margin: 70px 40px 40px 40px; }
         body { font-family: 'Arial MT', Arial, sans-serif; font-size: 11px; line-height: 1.5; margin-top:8px; margin-bottom:6px; margin-left:1.3cm; margin-right:1.3cm;}
         
         /* Utility Classes */

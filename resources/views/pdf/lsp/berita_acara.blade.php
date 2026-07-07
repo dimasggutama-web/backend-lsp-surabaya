@@ -31,18 +31,49 @@
     </div>
 
     @php
+        if (!function_exists('terbilang')) {
+            function terbilang($angka) {
+                $angka = abs(intval($angka));
+                $satuan = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan',
+                           'Sepuluh', 'Sebelas', 'Dua Belas', 'Tiga Belas', 'Empat Belas', 'Lima Belas',
+                           'Enam Belas', 'Tujuh Belas', 'Delapan Belas', 'Sembilan Belas'];
+                $puluhan = ['', '', 'Dua Puluh', 'Tiga Puluh', 'Empat Puluh', 'Lima Puluh',
+                            'Enam Puluh', 'Tujuh Puluh', 'Delapan Puluh', 'Sembilan Puluh'];
+
+                if ($angka === 0) return 'Nol';
+                if ($angka < 20) return $satuan[$angka];
+                if ($angka < 100) {
+                    $sisa = $angka % 10;
+                    return $puluhan[intval($angka / 10)] . ($sisa > 0 ? ' ' . $satuan[$sisa] : '');
+                }
+                if ($angka < 1000) {
+                    $ratus = intval($angka / 100);
+                    $sisa  = $angka % 100;
+                    $hasil = ($ratus === 1 ? 'Seratus' : $satuan[$ratus] . ' Ratus');
+                    return $hasil . ($sisa > 0 ? ' ' . terbilang($sisa) : '');
+                }
+                if ($angka < 1000000) {
+                    $ribu = intval($angka / 1000);
+                    $sisa = $angka % 1000;
+                    $hasil = ($ribu === 1 ? 'Seribu' : terbilang($ribu) . ' Ribu');
+                    return $hasil . ($sisa > 0 ? ' ' . terbilang($sisa) : '');
+                }
+                return (string) $angka;
+            }
+        }
+
         $hari = \Carbon\Carbon::parse($detail->tanggal_mulai)->locale('id')->isoFormat('dddd');
-        $tanggal = \Carbon\Carbon::parse($detail->tanggal_mulai)->format('d');
+        $tanggal = terbilang((int) \Carbon\Carbon::parse($detail->tanggal_mulai)->format('d'));
         $tanggalSurat = \Carbon\Carbon::parse($detail->tanggal_selesai)->locale('id');
         $bulan = \Carbon\Carbon::parse($detail->tanggal_mulai)->locale('id')->isoFormat('MMMM');
-        $tahun = \Carbon\Carbon::parse($detail->tanggal_mulai)->format('Y');
+        $tahun = terbilang((int) \Carbon\Carbon::parse($detail->tanggal_mulai)->format('Y'));
         $tuk = $detail->tuk->namaInstitusi ?? '-';
         $skema = $detail->skema->namaSkema ?? '-';
         $jmlPeserta = count($detail->pesertaPengajuanUjk ?? []);
     @endphp
 
     <p style="font-family: 'Arial MT', Arial; font-size: 11px; text-align: justify; margin-bottom: 15px;">
-        Pada hari ini <strong>{{ $hari }}</strong> tanggal <strong>{{ $tanggal }}</strong> bulan <strong>{{ $bulan }}</strong> tahun <strong>{{ $tahun }}</strong>, bertempat di TUK <strong>{{ $detail->bidang->namaBidang ?? 'Garmen' }} {{ $tuk }}</strong> telah dilakukan Uji Kompetensi Skema <strong>{{ $skema }}</strong> yang diikuti sebanyak <strong>{{ $jmlPeserta }}</strong> peserta dengan penjelasan sebagai berikut :
+        Pada hari ini {{ $hari }} tanggal {{ $tanggal }} bulan {{ $bulan }} tahun {{ $tahun }}, bertempat di TUK {{ $detail->bidang->namaBidang ?? 'Garmen' }} {{ $tuk }} telah dilakukan Uji Kompetensi Skema {{ $skema }} yang diikuti sebanyak {{ $jmlPeserta }} peserta dengan penjelasan sebagai berikut :
     </p>
 
     <table width="100%" style="margin-bottom: 10px; font-family: 'Arial MT', Arial; font-size: 11px;">
@@ -51,7 +82,7 @@
             <tr>
                 <td width="5%" valign="top">{{ $index+1 }}.</td>
                 <td width="40%" valign="top">{{ $tugas->asesor->user->namaLengkap ?? '-' }}</td>
-                <td width="55%" valign="top">No. Reg. Sertifikat &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MET.{{ $tugas->asesor->noRegistrasi ?? '-' }}</td>
+                <td width="55%" valign="top">No. Reg. Sertifikat &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $tugas->asesor->noRegistrasi ?? '-' }}</td>
             </tr>
         @endforeach
     </table>

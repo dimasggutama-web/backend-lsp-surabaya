@@ -156,6 +156,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/admin-lsp/keputusan-uji/{detail_id}', [AdminLspController::class, 'hasilKeputusanUji']);
         Route::post('/admin-lsp/upload-dokumen/{detail_id}', [LspUploadController::class, 'uploadDokumenLsp']);
         Route::post('/admin-lsp/ploting-jadwal/{detail_id}', [AdminLspController::class, 'plotingJadwal']);
+        Route::put('/admin-lsp/ploting-jadwal/{detail_id}', [AdminLspController::class, 'updatePlotingJadwal']);
         Route::post('/admin-lsp/simpan-plotting-peserta/{detail_id}', [AdminLspController::class, 'simpanPlotingPeserta']);
         Route::put('/admin-lsp/{id}/batalkan-pengajuan', [AdminLspController::class, 'batalkanPengajuan']);
         Route::delete('/admin-lsp/pengajuan/{id}', [AdminLspController::class, 'deletePengajuan']);

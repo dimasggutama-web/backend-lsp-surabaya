@@ -14,7 +14,7 @@
         .table-bordered td, .table-bordered th { border: 1px solid black; padding: 4px; font-weight: bold;}
 
 
-        @page { size: A4 portrait; margin: 40px 50px; }
+        @page { size: A4 portrait; margin: 80px 40px 40px 40px; }
         body { font-family: 'Arial', sans-serif; font-size: 11px; line-height: 1.4; color: #000; margin-left:1.3cm; margin-right:1.3cm; }
         p, h1, h2, h3, h4, h5, h6, ul, ol, li { margin: 0; padding: 0; }
 

@@ -214,6 +214,156 @@ class AdminLspController extends Controller
         }
     }
 
+    public function updatePlotingJadwal(Request $request, $detail_id)
+    {
+        $validator = Validator::make($request->all(), [
+            'penyilia_id'             => 'required|exists:penyilia_lsp,id',
+            'tanggal_mulai_asesmen'   => 'required|date',
+            'tanggal_selesai_asesmen' => 'required|date|after_or_equal:tanggal_mulai_asesmen',
+            'asesor_ids'              => 'required|array|min:1', 
+            'asesor_ids.*'            => 'required|exists:asesor,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Data tidak lengkap atau format salah',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $jadwal = JadwalAsesmen::where('pengajuan_ujk_detail_id', $detail_id)->first();
+
+        if (!$jadwal) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Jadwal belum di-ploting. Tidak bisa diedit.'
+            ], 404);
+        }
+
+        $pengajuanDetail = PengajuanUjkDetail::with('pengajuan')->find($detail_id);
+
+        if (!$pengajuanDetail || !$pengajuanDetail->pengajuan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Data pengajuan tidak ditemukan.'
+            ], 404);
+        }
+
+        $penyilia = \App\Models\Penyilia::find($request->penyilia_id);
+        if ($penyilia && $penyilia->status !== 'Aktif') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validasi Gagal! Penyilia yang dipilih saat ini berstatus Non-aktif.'
+            ], 422);
+        }
+
+        $skemaId = $pengajuanDetail->skema_id; 
+
+        $jumlahAsesorValid = Asesor::whereIn('id', $request->asesor_ids)
+            ->whereHas('skema', function ($query) use ($skemaId) {
+                $query->where('skema_id', $skemaId); 
+            }) 
+            ->whereHas('user', function ($query) {
+                $query->where('status', 'Aktif');
+            })
+            ->count();
+            
+        if ($jumlahAsesorValid !== count($request->asesor_ids)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validasi Gagal! Terdapat Asesor yang dipilih namun tidak menguasai Skema Kompetensi ini.'
+            ], 422);
+        }
+
+        $tukId = $pengajuanDetail->jejaring_id; 
+
+        $penyiliaBentrok = JadwalAsesmen::where('penyilia_id', $request->penyilia_id)
+            ->where('id', '!=', $jadwal->id)
+            ->where(function($q) use ($request) {
+                $q->where('tanggal_mulai_asesmen', '<=', $request->tanggal_selesai_asesmen)
+                  ->where('tanggal_selesai_asesmen', '>=', $request->tanggal_mulai_asesmen);
+            })
+            ->whereHas('pengajuanUjkDetail', function ($q) use ($tukId, $skemaId) {
+                $q->where('jejaring_id', '!=', $tukId)
+                  ->orWhere('skema_id', $skemaId);
+            })
+            ->first();
+
+        if ($penyiliaBentrok) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Gagal update ploting! Penyilia sudah memiliki jadwal UJK di rentang tanggal tersebut dengan TUK/Skema yang bentrok.'
+            ], 422);
+        }
+
+        $asesorBentrok = PenugasanAsesor::whereIn('asesor_id', $request->asesor_ids)
+            ->where('jadwal_asesmen_id', '!=', $jadwal->id)
+            ->whereHas('jadwalAsesmen', function ($query) use ($request, $tukId, $skemaId) {
+                $query->where(function($q) use ($request) {
+                    $q->where('tanggal_mulai_asesmen', '<=', $request->tanggal_selesai_asesmen)
+                      ->where('tanggal_selesai_asesmen', '>=', $request->tanggal_mulai_asesmen);
+                })
+                ->whereHas('pengajuanUjkDetail', function ($q) use ($tukId, $skemaId) {
+                    $q->where('jejaring_id', '!=', $tukId)
+                      ->orWhere('skema_id', $skemaId);
+                });
+            })
+            ->first();
+
+        if ($asesorBentrok) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Gagal update ploting! Ada Asesor yang sudah memiliki jadwal UJK di rentang tanggal tersebut dengan TUK/Skema yang bentrok.'
+            ], 422);
+        }
+        
+        DB::beginTransaction();
+        try {
+            $jadwal->update([
+                'penyilia_id'              => $request->penyilia_id,
+                'tanggal_mulai_asesmen'    => $request->tanggal_mulai_asesmen,
+                'tanggal_selesai_asesmen'  => $request->tanggal_selesai_asesmen,
+            ]);
+
+            $pengajuanDetail->update([
+                'tanggal_mulai' => $request->tanggal_mulai_asesmen,
+                'tanggal_selesai' => $request->tanggal_selesai_asesmen
+            ]);
+
+            // Hapus penugasan asesor lama
+            PenugasanAsesor::where('jadwal_asesmen_id', $jadwal->id)->delete();
+
+            // Insert penugasan asesor baru
+            foreach ($request->asesor_ids as $id_asesor) {
+                PenugasanAsesor::create([
+                    'jadwal_asesmen_id' => $jadwal->id,
+                    'asesor_id'         => $id_asesor,
+                ]);
+            }
+
+            // Null-kan asesor_id di tabel peserta jika asesornya dihapus dari ploting
+            PesertaPengajuanUjk::where('pengajuan_ujk_detail_id', $detail_id)
+                ->whereNotNull('asesor_id')
+                ->whereNotIn('asesor_id', $request->asesor_ids)
+                ->update(['asesor_id' => null]);
+
+            DB::commit();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Jadwal & Asesor berhasil di-update',
+                'data' => ['jadwal_id' => $jadwal->id]
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan sistem, update ploting dibatalkan.',
+                'error_detail' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function batalkanPengajuan($detail_id)
     {
         $pengajuan = PengajuanUjkDetail::find($detail_id);
