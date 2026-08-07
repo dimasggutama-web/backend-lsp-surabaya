@@ -148,9 +148,10 @@ class AdminBlkController extends Controller
                             'rw'           => $baris[8], 
                             'kelurahan'    => $baris[9], 
                             'kecamatan'    => $baris[10], 
-                            'nomorTelepon' => $baris[11] ?? null, 
-                            'email'        => $baris[12] ?? null, 
-                            'pendidikanTerakhir' => $baris[13] ?? null,
+                            'kabupaten'    => $baris[11] ?? null, 
+                            'nomorTelepon' => $baris[12] ?? null, 
+                            'email'        => $baris[13] ?? null, 
+                            'pendidikanTerakhir' => $baris[14] ?? null,
                         ]);
                     }
                 }
@@ -342,7 +343,8 @@ class AdminBlkController extends Controller
                             'namaPeserta'  => $baris[1], 'nik' => $baris[2], 'jenisKelamin' => $baris[3], 
                             'tempatLahir'  => $baris[4], 'tanggalLahir' => $tglLahir, 'alamat' => $baris[6], 
                             'rt' => $baris[7], 'rw' => $baris[8], 'kelurahan' => $baris[9], 'kecamatan' => $baris[10], 
-                            'nomorTelepon' => $baris[11] ?? null, 'email' => $baris[12] ?? null, 'pendidikanTerakhir' => $baris[13] ?? null,
+                            'kabupaten'    => $baris[11] ?? null,
+                            'nomorTelepon' => $baris[12] ?? null, 'email' => $baris[13] ?? null, 'pendidikanTerakhir' => $baris[14] ?? null,
                         ]);
                     }
                 }

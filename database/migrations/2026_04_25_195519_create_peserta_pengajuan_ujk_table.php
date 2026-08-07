@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('rw', 20);
             $table->string('kelurahan', 100);
             $table->string('kecamatan', 100);
+            $table->string('kabupaten', 100)->nullable();
             $table->string('nomorTelepon', 100);
             $table->string('email', 100);
             $table->string('pendidikanTerakhir', 100);
