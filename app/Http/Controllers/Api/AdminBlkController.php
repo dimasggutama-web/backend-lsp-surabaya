@@ -365,7 +365,7 @@ class AdminBlkController extends Controller
         }
     }
     public function getDrafts(){
-        $drafts = PengajuanUjk::with(['sumberAnggaran', 'detailSkema.tuk', 'detailSkema.skema', 'detailSkema.pesertaPengajuanUjk']) 
+        $drafts = PengajuanUjk::with(['sumberAnggaran', 'detailSkema.tuk', 'detailSkema.skema.bidang', 'detailSkema.pesertaPengajuanUjk']) 
             ->where('admin_blk_id', auth()->id())
             ->where('status', 'Draft')
             ->get();
