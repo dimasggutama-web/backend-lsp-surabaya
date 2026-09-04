@@ -17,7 +17,7 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('username', $request->username)->first();
+        $user = User::whereRaw('BINARY username = ?', [$request->username])->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'username atau password salah'], 401);
         }
@@ -45,6 +45,4 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logout sukses'], 200);
     }
-
-
 }
